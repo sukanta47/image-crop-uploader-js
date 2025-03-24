@@ -12,10 +12,11 @@ In this tutorial, we’ll create a **React + TypeScript** component that allows 
 - **Canvas API**  
 
 ## 🎯 **Features**  
-✅ Upload an image (**drag & drop or file selection**)
-✅ Crop, zoom, and rotate before uploading
-✅ Convert cropped image to **Blob** or **Base64**
-✅ Preview & save the cropped image
+
+✅ Upload an image (**drag & drop or file selection**)  
+✅ Crop, zoom, and rotate before uploading  
+✅ Convert cropped image to **Blob** or **Base64**  
+✅ Preview & save the cropped image  
 
 Here’s the actual UI output of our application:  
 
