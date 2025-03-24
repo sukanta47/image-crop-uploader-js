@@ -1,11 +1,11 @@
-# Cropping & Uploading Profile Pictures in React with TypeScript and react-easy-crop
+# Cropping & Uploading Profile Pictures in React with JavaScript and react-easy-crop
 Profile picture uploads are an essential feature in modern web applications, enabling users to personalize their accounts on **social media platforms, professional networks, and corporate dashboards.** To enhance user experience, it's crucial to provide **intuitive image cropping, zooming, and rotation** before uploading.
 
-In this tutorial, we’ll create a **React + TypeScript** component that allows users to **effortlessly select, crop, adjust, and upload** their profile pictures using **react-easy-crop**. 🚀
+In this tutorial, we’ll create a **React JS** component that allows users to **effortlessly select, crop, adjust, and upload** their profile pictures using **react-easy-crop**. 🚀
 
 ## 🛠 **Tech Stack**  
 - **React**  
-- **TypeScript**  
+- **JavaScript**  
 - **Material-UI**  
 - **react-easy-crop**  
 - **FileReader API**  
@@ -33,8 +33,8 @@ Our cropper module also supports **drag and drop**:
 ---
 
 ## 📌 **GitHub Repositories**  
-💻 **React + TypeScript**: [GitHub - image-crop-uploader-ts](https://github.com/sukanta47/image-crop-uploader-ts)
-💻 **React + JavaScript**: [GitHub - image-crop-uploader-js](https://github.com/sukanta47/image-crop-uploader-js)
+Find my other repository for Typescript version
+💻 **React + TypeScript**: [GitHub - image-crop-uploader-ts](https://github.com/sukanta47/image-crop-uploader-ts)  
 
 ---
 
@@ -50,36 +50,30 @@ pnpm add react-easy-crop @mui/material @mui/icons-material
 ```
 
 2️⃣ **Creating the Image Cropper Component**
-We’ll create an ImageCropper.tsx component that allows users to upload, crop, zoom, and rotate images.
+We’ll create an ImageCropper.jsx component that allows users to upload, crop, zoom, and rotate images.
 
-🔹 ImageCropper.tsx
+🔹 ImageCropper.jsx
 
 ```
 import { IconButton, Slider, Tooltip } from "@mui/material";
-import { useCallback, useEffect, useRef, useState } from "react";
-import Cropper, { Area, Point } from "react-easy-crop";
+import { useCallback, useEffect, useState } from "react";
+import Cropper from "react-easy-crop";
 import ZoomInRoundedIcon from "@mui/icons-material/ZoomInRounded";
 import ZoomOutRoundedIcon from "@mui/icons-material/ZoomOutRounded";
 import RotateLeftRoundedIcon from "@mui/icons-material/Rotate90DegreesCcwRounded";
 import RotateRightRoundedIcon from "@mui/icons-material/Rotate90DegreesCwRounded";
 import OpenWithIcon from "@mui/icons-material/OpenWith";
-
+import PropTypes from "prop-types";
 import "./ImageCropper.scss";
-import { ImageProperties } from "../ImageUploadModal/ImageUploadModal";
-
-interface ImageCropperProps {
-  uploadedImage: string;
-  setImageProperties: (props: any) => void;
-}
 
 const ImageCropper = ({
   uploadedImage,
   setImageProperties,
-}: ImageCropperProps) => {
-  const [crop, setCrop] = useState<Point>({ x: 0, y: 0 });
-  const [zoom, setZoom] = useState<number>(1);
-  const [rotation, setRotation] = useState<number>(0);
-  const [croppedAreaPixels, setCroppedAreaPixels] = useState<Area>({
+}) => {
+  const [crop, setCrop] = useState({ x: 0, y: 0 });
+  const [zoom, setZoom] = useState(1);
+  const [rotation, setRotation] = useState(0);
+  const [croppedAreaPixels, setCroppedAreaPixels] = useState({
     height: 0,
     width: 0,
     x: 0,
@@ -87,7 +81,7 @@ const ImageCropper = ({
   });
 
   useEffect(() => {
-    setImageProperties((prevVal: ImageProperties) => {
+    setImageProperties((prevVal) => {
       if (
         prevVal.zoom !== zoom ||
         prevVal.rotation !== rotation ||
@@ -100,17 +94,17 @@ const ImageCropper = ({
   }, [croppedAreaPixels, rotation, zoom]);
 
   const onCropComplete = useCallback(
-    (croppedArea: Area, croppedAreaPixels: Area): void => {
+    (croppedArea, croppedAreaPixels) => {
       setCroppedAreaPixels(croppedAreaPixels);
     },
     []
   );
 
-  const handleZoomChange = (value: number) => {
+  const handleZoomChange = (value) => {
     setZoom(value);
   };
 
-  const handleZoomClick = (mode: string) => {
+  const handleZoomClick = (mode) => {
     if (mode === "zoomin") {
       setZoom((prev) => {
         if (prev >= 3) return prev;
@@ -124,7 +118,7 @@ const ImageCropper = ({
     }
   };
 
-  const handleRotationChange = (direction: string) => {
+  const handleRotationChange = (direction) => {
     if (rotation >= 360 || rotation <= -360) setRotation(0);
     if (direction === "left") setRotation((prev) => prev - 90);
     else setRotation((prev) => prev + 90);
@@ -176,7 +170,7 @@ const ImageCropper = ({
             max={3}
             step={0.1}
             aria-labelledby="Zoom"
-            onChange={(e, value) => handleZoomChange(value as number)}
+            onChange={(e, value) => handleZoomChange(value)}
             title="Slide to zoom in or out"
           />
         </div>
@@ -201,22 +195,34 @@ const ImageCropper = ({
   );
 };
 
+ImageCropper.propTypes = {
+  uploadedImage:PropTypes.string,
+  setImageProperties: PropTypes.func,
+}
+
 export default ImageCropper;
+
 ```
 
 3️⃣ **Crop the Image Using Canvas**
 We’ll use the Canvas API to extract the cropped area and return the final image.
 
-🔹 helper.ts
+🔹 helper.js
 
 ```
-import { Area } from "react-easy-crop";
+export const blobToBase64 = (blob) => {
+  return new Promise((resolve, _) => {
+    const reader = new FileReader();
+    reader.onloadend = () => resolve(reader.result);
+    reader.readAsDataURL(blob);
+  });
+};
 
-export const getCroppedImg = async (imageSrc:string, croppedPixels:Area, rotation:number = 0):Promise<Blob | null> => {
+export const getCroppedImg = async (imageSrc, croppedPixels, rotation = 0) => {
   try {
-    const image:HTMLImageElement = await createImage(imageSrc);
+    const image = await createImage(imageSrc);
     const canvas = document.createElement("canvas");
-    const ctx:CanvasRenderingContext2D | null = canvas.getContext("2d");
+    const ctx = canvas.getContext("2d");
 
     const radians = (rotation * Math.PI) / 180;
 
@@ -244,7 +250,7 @@ export const getCroppedImg = async (imageSrc:string, croppedPixels:Area, rotatio
 
     // Create another canvas for the final cropped image
     const croppedCanvas = document.createElement("canvas");
-    const croppedCtx:CanvasRenderingContext2D | null = croppedCanvas.getContext("2d");
+    const croppedCtx = croppedCanvas.getContext("2d");
 
     croppedCanvas.width = croppedPixels.width;
     croppedCanvas.height = croppedPixels.height;
@@ -278,7 +284,7 @@ export const getCroppedImg = async (imageSrc:string, croppedPixels:Area, rotatio
   }
 };
 
-const createImage = (url:string):Promise<HTMLImageElement> =>
+const createImage = (url) =>
   new Promise((resolve, reject) => {
     const image = new Image();
     image.crossOrigin = "anonymous";
@@ -286,11 +292,12 @@ const createImage = (url:string):Promise<HTMLImageElement> =>
     image.onload = ()=> resolve(image);
     image.onerror = (error) => reject(error);
   });
+
 ```
 4️⃣ **Profile Picture Upload Component**
 This component selects, crops, and uploads the profile picture.
 
-🔹 ImageUploadModal.tsx
+🔹 ImageUploadModal.jsx
 ```
 import { useRef, useState } from "react";
 import "./ImageUploadModal.scss";
@@ -304,19 +311,14 @@ import {
   Typography,
 } from "@mui/material";
 import CancelRoundedIcon from "@mui/icons-material/CancelRounded";
+import ImageCropper from "../ImageCropper/ImageCropper.jsx";
+import { getCroppedImg, blobToBase64 } from "../../../helpers/helper.js";
 
-import ImageCropper from "@src/ImageCropper/ImageCropper";
-import { getCroppedImg, blobToBase64 } from "@src/helpers/helper.ts";
-
-interface ImageUploadProps {
-  handleClose: () => void;
-  openModal:boolean;
-}
-const ImageUploadModal = ({ handleClose, openModal }: ImageUploadProps) => {
+const ImageUploadModal = ({ handleClose, openModal }) => {
   const [dragEnter, setDragEnter] = useState(false);
-  const [selectedImage, setSelectedImage] = useState<string | null>(null);
+  const [selectedImage, setSelectedImage] = useState(null);
   const [error, setError] = useState("");
-  const uploadProfilePicInputRef = useRef<HTMLInputElement>(null);
+  const uploadProfilePicInputRef = useRef(null);
   const [imageProperties, setImageProperties] = useState({
     zoom: 1,
     rotation: 0,
@@ -329,21 +331,21 @@ const ImageUploadModal = ({ handleClose, openModal }: ImageUploadProps) => {
   });
 
   /* on dragging over the valid dropzone area */
-  const handleDragOver = (event: React.MouseEvent) => {
+  const handleDragOver = (event) => {
     setDragEnter(true);
     event.preventDefault();
     event.stopPropagation();
   };
 
   /* on dragging out the valid dropzone area */
-  const handleDragLeave = (event: React.DragEvent) => {
+  const handleDragLeave = (event) => {
     setDragEnter(false);
     event.preventDefault();
     event.stopPropagation();
   };
 
   /* on drop of image onto the valid dropzone */
-  const handleDrop = (event: React.DragEvent) => {
+  const handleDrop = (event) => {
     event.preventDefault();
     event.stopPropagation();
     const file = event.dataTransfer.files[0];
@@ -351,7 +353,7 @@ const ImageUploadModal = ({ handleClose, openModal }: ImageUploadProps) => {
     validateAndUploadFile(file);
   };
 
-  const handleFileChange = (event: React.ChangeEvent<HTMLInputElement>) => {
+  const handleFileChange = (event) => {
     if (!event.target.files) return;
     const file = event?.target?.files[0];
     validateAndUploadFile(file);
@@ -366,8 +368,8 @@ const ImageUploadModal = ({ handleClose, openModal }: ImageUploadProps) => {
     setError("");
     setSelectedImage(null);
   };
-  /* check validations before uploading the file */
-  const validateAndUploadFile = (file: File) => {
+
+  const validateAndUploadFile = (file) => {
     if (file) {
       const validTypes = ["image/jpeg", "image/jpg", "image/png"];
       const maxSize = 5 * 1024 * 1024;
@@ -381,8 +383,8 @@ const ImageUploadModal = ({ handleClose, openModal }: ImageUploadProps) => {
         return;
       }
       setError("");
-      const reader: FileReader = new FileReader();
-      reader.onload = () => setSelectedImage(reader.result as string);
+      const reader = new FileReader();
+      reader.onload = () => setSelectedImage(reader.result);
       reader.readAsDataURL(file);
     }
   };
@@ -393,7 +395,7 @@ const ImageUploadModal = ({ handleClose, openModal }: ImageUploadProps) => {
       setError("No image selected. Please upload an image.");
       return;
     }
-    const croppedImage: Blob | null = await getCroppedImg(
+    const croppedImage = await getCroppedImg(
       selectedImage,
       croppedAreaPixels,
       rotation
@@ -402,7 +404,7 @@ const ImageUploadModal = ({ handleClose, openModal }: ImageUploadProps) => {
       setError("Failed to crop the image. Please try again.");
       return;
     }
-    const base64Image: string = await blobToBase64(croppedImage);
+    const base64Image = await blobToBase64(croppedImage);
     localStorage.setItem("userProfilePic", base64Image);
     handleClose();
   };
@@ -473,20 +475,36 @@ const ImageUploadModal = ({ handleClose, openModal }: ImageUploadProps) => {
         <div className="upload-footer">
           {selectedImage === null ? (
             <>
-              <Button onClick={handleClose} variant="outlined" className="btn-s">
+              <Button
+                onClick={handleClose}
+                variant="outlined"
+                className="btn-s"
+              >
                 Cancel
               </Button>
 
-              <Button  variant="contained" className="btn-p" onClick={() => attachButtonHandler()}>
+              <Button
+                variant="contained"
+                className="btn-p"
+                onClick={() => attachButtonHandler()}
+              >
                 Attach Photo
               </Button>
             </>
           ) : (
             <>
-              <Button onClick={handleChangeImage} variant="outlined" className="btn-s">
+              <Button
+                onClick={handleChangeImage}
+                variant="outlined"
+                className="btn-s"
+              >
                 Change Photo
               </Button>
-              <Button onClick={handleSubmit} variant="contained" className="btn-p">
+              <Button
+                onClick={handleSubmit}
+                variant="contained"
+                className="btn-p"
+              >
                 Upload Photo
               </Button>
             </>
@@ -502,6 +520,7 @@ ImageUploadModal.propTypes = {
 };
 
 export default ImageUploadModal;
+
 ```
 🎨 5️⃣ **Styling**
 Basic SCSS styles for a clean UI.
