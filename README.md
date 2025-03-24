@@ -813,9 +813,9 @@ button {
 }
 ```
 🎯 **Conclusion**
-✅ Users can select, crop, and adjust profile pictures.
-✅ react-easy-crop handles zoom & rotation effortlessly.
-✅ The Canvas API extracts the cropped image.
+✅ Users can select, crop, and adjust profile pictures. 
+✅ react-easy-crop handles zoom & rotation effortlessly. 
+✅ The Canvas API extracts the cropped image. 
 ✅ Supports drag & drop, file selection, and real-time previews.
 
 This approach provides a scalable, user-friendly solution for profile picture uploads. If you found this helpful, feel free to like & share! 🚀🔥
